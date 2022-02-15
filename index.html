@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>Ejemplo #1________</title>
+    <style>
+      body {
+        margin: 0;
+      }
+      canvas {
+        display: block;
+      }
+    </style>
+  </head>
+  <body>
+    <script type="module">
+      import * as THREE from "https://lizgar.github.io/UMNG/three.module.js";
+      import { SVGLoader } from "https://lizgar.github.io/UMNG/SVGLoader.js";
+
+      var renderer, scene, camera;
+
+      init();
+
+      function init() {
+        camera = new THREE.PerspectiveCamera(
+          50,
+          window.innerWidth / window.innerHeight,
+          1,
+          1000
+        );
+        camera.position.set(200, 200, 800);
+
+        renderer = new THREE.WebGLRenderer();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        document.body.appendChild(renderer.domElement);
+
+        scene = new THREE.Scene();
+        scene.background = new THREE.Color(0xb0b0b0);
+
+        var loader = new SVGLoader();
+        loader.load(
+          // resource URL
+          "https://lizgar.github.io/ICG/data/tiger.svg",
+          // called when the resource is loaded
+          function (data) {
+            var paths = data.paths;
+            var group = new THREE.Group();
+
+            for (var i = 0; i < paths.length; i++) {
+              var path = paths[i];
+
+              var material = new THREE.MeshBasicMaterial({
+                color: path.color,
+                side: THREE.DoubleSide,
+                depthWrite: false,
+              });
+
+              var shapes = path.toShapes(true);
+
+              for (var j = 0; j < shapes.length; j++) {
+                var shape = shapes[j];
+                var geometry = new THREE.ShapeBufferGeometry(shape);
+                var mesh = new THREE.Mesh(geometry, material);
+                group.add(mesh);
+              }
+            }
+
+            scene.add(group);
+            render();
+          },
+          // called when loading is in progresses
+          function (xhr) {
+            console.log((xhr.loaded / xhr.total) * 100 + "% loaded");
+          },
+          // called when loading has errors
+          function (error) {
+            console.log("An error happened");
+          }
+        );
+      }
+
+      function render() {
+        renderer.render(scene, camera);
+      }
+    </script>
+  </body>
+</html>
